@@ -5,3 +5,5 @@ Wordle is Josh Wardle's popular word game in which a guesser tries to guess a se
 - Green if the guess letter is in the word and in the correct spot.
 - Yellow if the guess letter is in the word but in the wrong spot.
 - Miss if the letter is not in the word in any spot.
+
+This repository contains code to play the game. You can click the Reply button for checking the reply for a single guess/target and the Play button to play a game.

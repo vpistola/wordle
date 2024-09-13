@@ -2,6 +2,8 @@ var wordle_small = [];
 var green = 'G';
 var yellow ='Y'; 
 var miss = '.';
+var correct = 'GGGGG';
+var replies_out = [];
 //var guesses = 'HELLO, DOLLY';
 //var targets = 'HELLO, WORLD, DOLLY, CELLO, ALLEY, HEAVY, HEART, ALLAY, LILAC';
 
@@ -26,6 +28,11 @@ function readSingleFile(e) {
 }
 
 function displayReplies(contents) {
+    var element = document.getElementById('replies');
+    element.textContent = contents;
+}
+
+function displayRepliesToArea(contents) {
     var element = document.getElementById('replies');
     element.textContent = contents;
 }
@@ -85,14 +92,79 @@ function replies_for(guesses, target) {
     displayReplies(replies.join(', '));
 }
 
-/*
+function consistent_targets(targets, guess, reply) {
+    /*All the words in `targets` that give this `reply` to this `guess`.*/
+    var out = [];
 
+    targets.forEach(target => {
+        if (reply_for(guess, target) == reply) {
+            out.push(target);
+        }
+    })
+
+    return out;
+}
+
+function random_guesser(reply, targets) {
+    /* Choose a guess at random from the consistent targets. */
+    return rdm_choose(targets)
+} 
+
+function rdm_choose(choices) {
+    var index = Math.floor(Math.random() * choices.length);
+    return choices[index];
+  }
+    
+
+function play(guesser, wordlist, target=null, verbose=true) {
+    /* The number of guesses it take for `guesser` to guess the Wordle word,
+    which is given by `target` or selected from the words in `wordlist`? */
+    var targets = wordlist = wordle_small;
+    var target  = target || rdm_choose(wordlist)  //Choose a random target if none was given
+    var reply = null;
+    var guesser=random_guesser; 
+    var N = wordlist.length;
+    var replies_area = document.getElementById('replies');
+    
+    //var AA = '';
+
+    for (let turn=1; turn < N + 1; turn++) {
+        var guess = guesser(reply, targets);
+
+        if (wordlist.includes(guess)) {
+            reply = reply_for(guess, target)
+        } else {
+            reply = 'unknown';
+        }
+
+        targets = consistent_targets(targets, guess, reply);
+
+        if (verbose) {
+            let nn = `Guess ${turn}: ${guess}, Reply: ${reply}; Remaining targets: ${targets.length}` + '\n';
+            replies_area.textContent += nn;
+            //console.log(nn);      
+        } 
+        if (reply == correct) return turn;
+    } 
+
+    console.log(replies_out);
+    //displayRepliesToArea(replies.join('\n'));
+    return N + 1;
+}
+
+/*
+assert reply_for('NINNY', 'ANNEX') == 'Y.G..'; assert  reply_for('ANNEX', 'NINNY') == '.YG..'
+assert reply_for('HELLO', 'WORLD') == '...GY'; assert  reply_for('WORLD', 'HELLO') == '.Y.G.'
+assert reply_for('HELLO', 'ABYSS') == '.....'; assert  reply_for('ABYSS', 'HELLO') == '.....'
+assert reply_for('EPEES', 'GEESE') == 'Y.GYY'; assert  reply_for('GEESE', 'EPEES') == '.YGYY'
+assert reply_for('WHEEE', 'PEEVE') == '..GYG'; assert  reply_for('PEEVE', 'WHEEE') == '.YG.G'
 */
 
 
 
 document.getElementById('file-input').addEventListener('change', readSingleFile, false);
 document.querySelector('#reply').addEventListener('click', replies_for);
+document.querySelector('#play').addEventListener('click', play.bind(null, random_guesser, wordle_small, null, true));
 
 // document.fonts.ready.then(() => {
 //     test_font();
